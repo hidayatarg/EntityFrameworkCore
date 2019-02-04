@@ -285,20 +285,21 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
                 var targetEntityType = entityTypeBuilder.ModelBuilder.Metadata.FindEntityType(targetClrType);
 
                 var existingOwnership = targetEntityType?.FindOwnership();
-                if (existingOwnership != null
-                    && entityType.Model.ShouldBeOwnedType(targetClrType)
+                var owned = existingOwnership != null
+                    || entityType.Model.ShouldBeOwnedType(targetClrType);
+                if (owned
                     && (existingOwnership.PrincipalEntityType != entityType
                         || existingOwnership.PrincipalToDependent.Name != navigationInfo.GetSimpleMemberName()))
                 {
                     return configurationSource.HasValue
-                           && !targetClrType.Equals(entityTypeBuilder.Metadata.ClrType)
-                        ? entityTypeBuilder.ModelBuilder.Entity(
-                            targetClrType, navigationInfo.GetSimpleMemberName(), entityType, configurationSource.Value)
-                        : null;
-                }
+                       && !targetClrType.Equals(entityTypeBuilder.Metadata.ClrType)
+                    ? entityTypeBuilder.ModelBuilder.Entity(
+                        targetClrType, navigationInfo.GetSimpleMemberName(), entityType, configurationSource.Value)
+                    : null;
+                }                
 
                 targetEntityTypeBuilder = configurationSource.HasValue
-                    ? entityTypeBuilder.ModelBuilder.Entity(targetClrType, configurationSource.Value, allowOwned: true)
+                    ? entityTypeBuilder.ModelBuilder.Entity(targetClrType, configurationSource.Value, owned)
                     : targetEntityType?.Builder;
             }
             else if (!targetClrType.Equals(entityTypeBuilder.Metadata.ClrType))
