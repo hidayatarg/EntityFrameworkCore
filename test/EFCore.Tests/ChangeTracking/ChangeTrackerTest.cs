@@ -1264,7 +1264,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
             }
         }
 
-        private static string NodeString(EntityEntryGraphNode node)
+        private static string NodeString<TState>(EntityEntryGraphNode<TState> node)
             => EntryString(node.SourceEntry)
                + " ---" + node.InboundNavigation?.Name + "--> "
                + EntryString(node.Entry);
@@ -2873,14 +2873,14 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
                 var traversal = new List<string>();
 
                 context.ChangeTracker.TrackGraph(
-                    category, visited, (e, v) =>
+                    category, visited, e =>
                     {
-                        if (v.Contains(e.Entry.Entity))
+                        if (e.NodeState.Contains(e.Entry.Entity))
                         {
                             return false;
                         }
 
-                        v.Add(e.Entry.Entity);
+                        e.NodeState.Add(e.Entry.Entity);
 
                         traversal.Add(NodeString(e));
 
@@ -2948,14 +2948,14 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
                 var traversal = new List<string>();
 
                 context.ChangeTracker.TrackGraph(
-                    category, visited, (e, v) =>
+                    category, visited, e =>
                     {
-                        if (v.Contains(e.Entry.Entity))
+                        if (e.NodeState.Contains(e.Entry.Entity))
                         {
                             return false;
                         }
 
-                        v.Add(e.Entry.Entity);
+                        e.NodeState.Add(e.Entry.Entity);
 
                         traversal.Add(NodeString(e));
 
